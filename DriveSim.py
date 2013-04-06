@@ -23,28 +23,42 @@ points = {}
 way2points = {}
 point2ways = {}
 debugPrint = False
+
+def selectRandomPointId():
+    global point2ways
+    # select a random point 
+    #print 'point2ways: ', len(point2ways)
+    myRandom = random.randrange(len(point2ways))
+    #print 'random =', myRandom
+    return point2ways.keys()[myRandom];
+
+def restOfWay(wayId,pointId): 
+    global point2ways
+    global way2points
+
+    index = way2points[wayId].index(pointId)
+    if index > 0 and index < len(way2points[wayId])-1:
+         if random.randrange(2) > 1:
+              nextPoints = copy.deepcopy(way2points[wayId][:index])
+              nextPoints.reverse()
+         else:
+              nextPoints = copy.deepcopy(way2points[wayId][index:])
+    else:
+        nextPoints = copy.deepcopy(way2points[wayId])
+        if index != 0:
+            nextPoints.reverse()
+    nextPoints=nextPoints[1:]
+    return nextPoints
+
 def main():
     """The main function"""
     readOsm('map.osm');
 
     writeKmlHead(bouds)
-    #print 'point2ways: ', len(point2ways)
-    myRandom = random.randrange(len(point2ways))
-    #print 'random =', myRandom
-    currPoint = point2ways.keys()[myRandom];
+    # select a random point 
+    currPoint = selectRandomPointId();
     currWayId = point2ways[currPoint][0]
-    nextPoints = copy.deepcopy(way2points[currWayId])
-    index = way2points[currWayId].index(currPoint)
-    if index > 0 and index < len(way2points[currWayId])-1:
-         if random.randrange(2) > 1:
-              nextPoints = copy.deepcopy(way2points[currWayId][:(index-1)]).reverse()
-         else:
-              nextPoints = copy.deepcopy(way2points[currWayId][(index+1):])
-    else:
-        if index == 0:
-            nextPoints = copy.deepcopy(way2points[currWayId])
-        else:
-            nextPoints = copy.deepcopy(way2points[currWayId]).reverse()
+    nextPoints = restOfWay(currWayId,currPoint)
     for i in range(47):
        #name = "%3d pt %-10s" % ( i,currPoint)
        name = "%3d" % (i)
@@ -60,21 +74,7 @@ def main():
               newWayId = currWays[random.randrange(len(currWays))]
           if not newWayId == currWayId:
                 currWayId = newWayId
-                index = way2points[currWayId].index(currPoint)
-                if debugPrint:
-                    print '<!-- way: ',currWayId,' (',len(way2points[currWayId]),') index: ',index,' -->'
-                if index > 0 and index < len(way2points[currWayId])-1:
-                     if random.randrange(2) > 1:
-                          nextPoints = copy.deepcopy(way2points[currWayId][:index])
-                          nextPoints.reverse()
-                     else:
-                          nextPoints = copy.deepcopy(way2points[currWayId][index:])
-                else:                    
-                    nextPoints = copy.deepcopy(way2points[currWayId])
-                    if index != 0:
-                        nextPoints.reverse()
-                nextPoints=nextPoints[1:]
-
+                nextPoints = restOfWay(currWayId,currPoint)
        if debugPrint:
            print '<!-- nextPoints: ', len(nextPoints) , nextPoints, ' -->'
            print '<!-- way: ', currWayId,' ', len(way2points[currWayId]) , way2points[currWayId], ' -->'
